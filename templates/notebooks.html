@@ -1,0 +1,555 @@
+{% extends "base.html" %}
+
+{% block title %}Notebooks - EEG Lab{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 sidebar">
+            <div class="p-3">
+                <h5>Notebook Tools</h5>
+                
+                <div class="mb-3">
+                    <label class="form-label">Notebook Type</label>
+                    <select class="form-select" id="notebookTypeFilter">
+                        <option value="">All Types</option>
+                        <option value="analysis">Data Analysis</option>
+                        <option value="training">Model Training</option>
+                        <option value="testing">Model Testing</option>
+                        <option value="preprocessing">Data Preprocessing</option>
+                        <option value="visualization">Visualization</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary w-100 mb-3" onclick="createNewNotebook()">
+                    <i class="fas fa-plus"></i> New Notebook
+                </button>
+                
+                <button class="btn btn-outline-success w-100 mb-3" onclick="importNotebook()">
+                    <i class="fas fa-upload"></i> Import Notebook
+                </button>
+                
+                <button class="btn btn-outline-info w-100 mb-3" onclick="openJupyterLab()">
+                    <i class="fas fa-external-link-alt"></i> Open JupyterLab
+                </button>
+                
+                <div class="mt-4">
+                    <h6>Quick Templates</h6>
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action" onclick="createFromTemplate('eeg_analysis')">
+                            <i class="fas fa-brain text-primary"></i> EEG Analysis
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="createFromTemplate('seizure_detection')">
+                            <i class="fas fa-heartbeat text-danger"></i> Seizure Detection
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="createFromTemplate('feature_extraction')">
+                            <i class="fas fa-cogs text-warning"></i> Feature Extraction
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="createFromTemplate('signal_preprocessing')">
+                            <i class="fas fa-filter text-info"></i> Signal Preprocessing
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="createFromTemplate('model_training')">
+                            <i class="fas fa-robot text-success"></i> Model Training
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Jupyter Notebooks</h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="refreshNotebooks()">
+                        <i class="fas fa-refresh"></i> Refresh
+                    </button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" onclick="setView('grid')">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="setView('list')">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Server Status -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="status-indicator status-online me-3" id="jupyterStatus"></div>
+                                <div>
+                                    <h6 class="mb-0">Jupyter Server Status</h6>
+                                    <small class="text-muted" id="jupyterStatusText">Server running on localhost:8888</small>
+                                </div>
+                                <div class="ms-auto">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="startJupyterServer()">
+                                        <i class="fas fa-play"></i> Start Server
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="stopJupyterServer()">
+                                        <i class="fas fa-stop"></i> Stop Server
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notebooks Grid -->
+            <div class="row" id="notebooksContainer">
+                {% for notebook in notebooks %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">{{ notebook }}</h6>
+                            <span class="badge bg-info">ipynb</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <i class="fas fa-book text-primary fa-3x"></i>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Type:</small>
+                                <span class="badge bg-light text-dark">Analysis</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Last Modified:</small>
+                                <small>Today, 2:30 PM</small>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted">Kernel:</small>
+                                <span class="badge bg-success">Python 3</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="btn-group w-100" role="group">
+                                <button class="btn btn-sm btn-primary" onclick="openNotebook('{{ notebook }}')">
+                                    <i class="fas fa-play"></i> Open
+                                </button>
+                                <button class="btn btn-sm btn-info" onclick="previewNotebook('{{ notebook }}')">
+                                    <i class="fas fa-eye"></i> Preview
+                                </button>
+                                <button class="btn btn-sm btn-success" onclick="downloadNotebook('{{ notebook }}')">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not notebooks %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-book fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Notebooks Found</h4>
+                        <p class="text-muted">Create your first Jupyter notebook to start analyzing EEG data.</p>
+                        <button class="btn btn-primary" onclick="createNewNotebook()">
+                            <i class="fas fa-plus"></i> Create First Notebook
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-edit text-primary me-3"></i>
+                                    <div>
+                                        <strong>eeg_preprocessing.ipynb</strong> was modified
+                                        <small class="text-muted d-block">2 hours ago</small>
+                                    </div>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-plus text-success me-3"></i>
+                                    <div>
+                                        <strong>seizure_detection_v2.ipynb</strong> was created
+                                        <small class="text-muted d-block">1 day ago</small>
+                                    </div>
+                                </div>
+                                <div class="list-group-item d-flex align-items-center">
+                                    <i class="fas fa-play text-info me-3"></i>
+                                    <div>
+                                        <strong>model_training.ipynb</strong> was executed
+                                        <small class="text-muted d-block">2 days ago</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Notebook Modal -->
+<div class="modal fade" id="createNotebookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Notebook</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createNotebookForm">
+                    <div class="mb-3">
+                        <label for="notebookName" class="form-label">Notebook Name</label>
+                        <input type="text" class="form-control" id="notebookName" 
+                               placeholder="Enter notebook name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notebookType" class="form-label">Notebook Type</label>
+                        <select class="form-select" id="notebookType">
+                            <option value="analysis">Data Analysis</option>
+                            <option value="training">Model Training</option>
+                            <option value="testing">Model Testing</option>
+                            <option value="preprocessing">Data Preprocessing</option>
+                            <option value="visualization">Visualization</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notebookKernel" class="form-label">Kernel</label>
+                        <select class="form-select" id="notebookKernel">
+                            <option value="python3">Python 3</option>
+                            <option value="r">R</option>
+                            <option value="julia">Julia</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notebookDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="notebookDescription" rows="3" 
+                                  placeholder="Brief description of the notebook purpose..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitCreateNotebook()">
+                    <i class="fas fa-plus"></i> Create Notebook
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notebook Preview Modal -->
+<div class="modal fade" id="notebookPreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Notebook Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="notebookPreviewContent">
+                <!-- Notebook preview will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="openFromPreview()">
+                    <i class="fas fa-external-link-alt"></i> Open in Jupyter
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentNotebook = '';
+    let currentView = 'grid';
+
+    function createNewNotebook() {
+        const modal = new bootstrap.Modal(document.getElementById('createNotebookModal'));
+        modal.show();
+    }
+
+    function submitCreateNotebook() {
+        const name = document.getElementById('notebookName').value;
+        const type = document.getElementById('notebookType').value;
+        const kernel = document.getElementById('notebookKernel').value;
+        const description = document.getElementById('notebookDescription').value;
+        
+        if (!name) {
+            alert('Please enter a notebook name');
+            return;
+        }
+        
+        fetch('/create_notebook', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                name: name,
+                type: type,
+                kernel: kernel,
+                description: description
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Notebook created successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('createNotebookModal')).hide();
+                location.reload();
+            } else {
+                alert('Error creating notebook: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Error creating notebook: ' + error.message);
+        });
+    }
+
+    function openNotebook(notebookName) {
+        fetch(`/open_notebook/${notebookName}`, {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Opening ${notebookName} in Jupyter...`);
+                // In a real implementation, this would open the notebook in a new tab
+                window.open(`http://localhost:8888/notebooks/${notebookName}`, '_blank');
+            } else {
+                alert('Error opening notebook: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Error opening notebook: ' + error.message);
+        });
+    }
+
+    function previewNotebook(notebookName) {
+        currentNotebook = notebookName;
+        
+        // Mock notebook preview content
+        const previewContent = `
+            <div class="notebook-preview">
+                <div class="mb-3">
+                    <h6>Notebook: ${notebookName}</h6>
+                    <span class="badge bg-primary">Python 3</span>
+                    <span class="badge bg-success">5 cells</span>
+                </div>
+                
+                <div class="cell-preview mb-3">
+                    <div class="cell-header">
+                        <span class="badge bg-info">Markdown</span>
+                        <small class="text-muted">Cell 1</small>
+                    </div>
+                    <div class="cell-content bg-light p-3">
+                        <h5># EEG Data Analysis</h5>
+                        <p>This notebook demonstrates basic EEG signal analysis techniques...</p>
+                    </div>
+                </div>
+                
+                <div class="cell-preview mb-3">
+                    <div class="cell-header">
+                        <span class="badge bg-warning">Code</span>
+                        <small class="text-muted">Cell 2</small>
+                    </div>
+                    <div class="cell-content bg-light p-3">
+                        <pre><code>import numpy as np
+import pandas as pd
+import mne
+import matplotlib.pyplot as plt
+
+# Load EEG data
+raw = mne.io.read_raw_edf('data/sample.edf')
+print(f"Data shape: {raw.get_data().shape}")</code></pre>
+                    </div>
+                </div>
+                
+                <div class="cell-preview mb-3">
+                    <div class="cell-header">
+                        <span class="badge bg-warning">Code</span>
+                        <small class="text-muted">Cell 3</small>
+                    </div>
+                    <div class="cell-content bg-light p-3">
+                        <pre><code># Plot EEG channels
+fig, axes = plt.subplots(4, 1, figsize=(12, 8))
+data = raw.get_data()[:4, :1000]  # First 4 channels, 1000 samples
+
+for i, ax in enumerate(axes):
+    ax.plot(data[i])
+    ax.set_title(f'Channel {i+1}')
+    ax.set_ylabel('Amplitude (μV)')
+
+plt.tight_layout()
+plt.show()</code></pre>
+                    </div>
+                </div>
+                
+                <div class="text-muted">
+                    <small>Preview shows first 3 cells. Total: 5 cells</small>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('notebookPreviewContent').innerHTML = previewContent;
+        const modal = new bootstrap.Modal(document.getElementById('notebookPreviewModal'));
+        modal.show();
+    }
+
+    function downloadNotebook(notebookName) {
+        // Create a download link
+        const link = document.createElement('a');
+        link.href = `/notebooks/${notebookName}`;
+        link.download = notebookName;
+        link.click();
+    }
+
+    function importNotebook() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.ipynb';
+        input.onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('notebook', file);
+                
+                fetch('/import_notebook', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Notebook imported successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error importing notebook');
+                    }
+                });
+            }
+        };
+        input.click();
+    }
+
+    function createFromTemplate(templateType) {
+        const templates = {
+            'eeg_analysis': 'EEG_Analysis_Template',
+            'seizure_detection': 'Seizure_Detection_Template',
+            'feature_extraction': 'Feature_Extraction_Template',
+            'signal_preprocessing': 'Signal_Preprocessing_Template',
+            'model_training': 'Model_Training_Template'
+        };
+        
+        const templateName = templates[templateType];
+        const notebookName = `${templateName}_${Date.now()}`;
+        
+        fetch('/create_notebook', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                name: notebookName,
+                template: templateType
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Template notebook ${templateName} created!`);
+                location.reload();
+            } else {
+                alert('Error creating template notebook');
+            }
+        });
+    }
+
+    function openJupyterLab() {
+        window.open('http://localhost:8888/lab', '_blank');
+    }
+
+    function startJupyterServer() {
+        // This would start the Jupyter server
+        alert('Starting Jupyter server...');
+        document.getElementById('jupyterStatus').className = 'status-indicator status-online me-3';
+        document.getElementById('jupyterStatusText').textContent = 'Server running on localhost:8888';
+    }
+
+    function stopJupyterServer() {
+        // This would stop the Jupyter server
+        alert('Stopping Jupyter server...');
+        document.getElementById('jupyterStatus').className = 'status-indicator status-offline me-3';
+        document.getElementById('jupyterStatusText').textContent = 'Server stopped';
+    }
+
+    function setView(viewType) {
+        currentView = viewType;
+        // Update active button
+        document.querySelectorAll('.btn-group button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // TODO: Implement view switching logic
+    }
+
+    function refreshNotebooks() {
+        location.reload();
+    }
+
+    function openFromPreview() {
+        if (currentNotebook) {
+            openNotebook(currentNotebook);
+            bootstrap.Modal.getInstance(document.getElementById('notebookPreviewModal')).hide();
+        }
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check Jupyter server status
+        // This would be a real API call in production
+        setTimeout(() => {
+            document.getElementById('jupyterStatus').className = 'status-indicator status-online me-3';
+        }, 1000);
+    });
+</script>
+
+<style>
+.cell-preview {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+
+.cell-header {
+    background-color: #f8f9fa;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cell-content pre {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.notebook-preview {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+</style>
+{% endblock %}

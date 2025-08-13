@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}Models - EEG Lab{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 sidebar">
+            <div class="p-3">
+                <h5>Model Filters</h5>
+                <div class="mb-3">
+                    <label class="form-label">Model Type</label>
+                    <select class="form-select" id="modelTypeFilter">
+                        <option value="">All Types</option>
+                        <option value="transformer">Transformer</option>
+                        <option value="cnn">CNN</option>
+                        <option value="rnn">RNN</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Accuracy Range</label>
+                    <input type="range" class="form-range" id="accuracyRange" min="0" max="100" value="80">
+                    <small class="text-muted">Min: <span id="accuracyValue">80</span>%</small>
+                </div>
+                <button class="btn btn-primary w-100 mb-3" onclick="addNewModel()">
+                    <i class="fas fa-plus"></i> Add New Model
+                </button>
+                <button class="btn btn-outline-success w-100" onclick="exportModels()">
+                    <i class="fas fa-download"></i> Export Results
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Model Repository</h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="refreshModels()">
+                        <i class="fas fa-refresh"></i> Refresh
+                    </button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" onclick="setView('grid')">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="setView('list')">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Models Grid -->
+            <div id="modelsContainer" class="row">
+                {% for model in models %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card model-card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">{{ model[1] }}</h6>
+                            <span class="badge bg-primary">{{ model[2] }}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Accuracy</small>
+                                    <div class="fw-bold text-success">
+                                        {% if model[3] %}{{ "%.1f"|format(model[3]) }}%{% else %}N/A{% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Loss</small>
+                                    <div class="fw-bold text-danger">
+                                        {% if model[4] %}{{ "%.4f"|format(model[4]) }}{% else %}N/A{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if model[3] %}
+                            <div class="progress mb-3" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ model[3] }}%" aria-valuenow="{{ model[3] }}" 
+                                     aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">Dataset:</small>
+                                <span class="badge bg-light text-dark">{{ model[5] or 'Unknown' }}</span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">Created:</small>
+                                <small>{{ model[6][:10] if model[6] else 'Unknown' }}</small>
+                            </div>
+                            
+                            {% if model[8] %}
+                            <p class="card-text text-muted small">{{ model[8][:100] }}{% if model[8]|length > 100 %}...{% endif %}</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <div class="btn-group w-100" role="group">
+                                <button class="btn btn-sm btn-primary" onclick="testModel({{ model[0] }})">
+                                    <i class="fas fa-vial"></i> Test
+                                </button>
+                                <button class="btn btn-sm btn-info" onclick="viewDetails({{ model[0] }})">
+                                    <i class="fas fa-eye"></i> Details
+                                </button>
+                                <button class="btn btn-sm btn-success" onclick="downloadModel({{ model[0] }})">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not models %}
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="fas fa-robot fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Models Found</h4>
+                        <p class="text-muted">Start by adding your first EEG model to the repository.</p>
+                        <button class="btn btn-primary" onclick="addNewModel()">
+                            <i class="fas fa-plus"></i> Add First Model
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Performance Chart -->
+            {% if models %}
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Model Performance Comparison</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="performanceChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Model Modal -->
+<div class="modal fade" id="addModelModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Model</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addModelForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="modelName" class="form-label">Model Name</label>
+                                <input type="text" class="form-control" id="modelName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="modelType" class="form-label">Model Type</label>
+                                <select class="form-select" id="modelType" required>
+                                    <option value="">Select Type</option>
+                                    <option value="transformer">Transformer</option>
+                                    <option value="cnn">CNN</option>
+                                    <option value="rnn">RNN</option>
+                                    <option value="hybrid">Hybrid</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="modelAccuracy" class="form-label">Accuracy (%)</label>
+                                <input type="number" class="form-control" id="modelAccuracy" min="0" max="100" step="0.1">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="modelLoss" class="form-label">Loss</label>
+                                <input type="number" class="form-control" id="modelLoss" min="0" step="0.0001">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modelDataset" class="form-label">Dataset Used</label>
+                        <input type="text" class="form-control" id="modelDataset" placeholder="e.g., CHB-MIT, BCI Competition IV">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modelDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="modelDescription" rows="3" placeholder="Describe the model architecture and purpose..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modelFilePath" class="form-label">Model File Path</label>
+                        <input type="text" class="form-control" id="modelFilePath" placeholder="models/my_model.pth">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitAddModel()">Add Model</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Model Details Modal -->
+<div class="modal fade" id="modelDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Model Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modelDetailsContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentView = 'grid';
+
+    // Initialize accuracy range slider
+    document.getElementById('accuracyRange').addEventListener('input', function() {
+        document.getElementById('accuracyValue').textContent = this.value;
+    });
+
+    function addNewModel() {
+        const modal = new bootstrap.Modal(document.getElementById('addModelModal'));
+        modal.show();
+    }
+
+    function submitAddModel() {
+        const form = document.getElementById('addModelForm');
+        const formData = new FormData(form);
+        
+        const modelData = {
+            name: document.getElementById('modelName').value,
+            type: document.getElementById('modelType').value,
+            accuracy: parseFloat(document.getElementById('modelAccuracy').value) || null,
+            loss: parseFloat(document.getElementById('modelLoss').value) || null,
+            dataset: document.getElementById('modelDataset').value,
+            description: document.getElementById('modelDescription').value,
+            file_path: document.getElementById('modelFilePath').value
+        };
+        
+        if (!modelData.name || !modelData.type) {
+            alert('Please fill in required fields (Name and Type)');
+            return;
+        }
+        
+        fetch('/add_model', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(modelData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Model added successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('addModelModal')).hide();
+                location.reload();
+            } else {
+                alert('Error adding model');
+            }
+        });
+    }
+
+    function testModel(modelId) {
+        window.location.href = `/testing?model=${modelId}`;
+    }
+
+    function viewDetails(modelId) {
+        fetch(`/api/model_results/${modelId}`)
+        .then(response => response.json())
+        .then(data => {
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Basic Information</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Name:</strong></td><td>${data.name}</td></tr>
+                            <tr><td><strong>Type:</strong></td><td>${data.type}</td></tr>
+                            <tr><td><strong>Created:</strong></td><td>${data.created_at}</td></tr>
+                            <tr><td><strong>Dataset:</strong></td><td>${data.dataset || 'N/A'}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Performance Metrics</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Accuracy</label>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width: ${data.accuracy || 0}%">
+                                    ${data.accuracy ? data.accuracy.toFixed(1) + '%' : 'N/A'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Loss: ${data.loss || 'N/A'}</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modelDetailsContent').innerHTML = content;
+            const modal = new bootstrap.Modal(document.getElementById('modelDetailsModal'));
+            modal.show();
+        });
+    }
+
+    function downloadModel(modelId) {
+        alert(`Downloading model ${modelId}... (Feature to be implemented)`);
+    }
+
+    function setView(viewType) {
+        currentView = viewType;
+        // Update active button
+        document.querySelectorAll('.btn-group button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // TODO: Implement view switching logic
+    }
+
+    function refreshModels() {
+        location.reload();
+    }
+
+    function exportModels() {
+        alert('Exporting model results... (Feature to be implemented)');
+    }
+
+    // Initialize performance chart if models exist
+    {% if models %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [{% for model in models %}'{{ model[1] }}'{% if not loop.last %},{% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Accuracy (%)',
+                    data: [{% for model in models %}{{ model[3] or 0 }}{% if not loop.last %},{% endif %}{% endfor %}],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    });
+    {% endif %}
+</script>
+{% endblock %}

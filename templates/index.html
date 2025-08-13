@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}EEG Lab - Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 mb-3">EEG Foundation Models Lab</h1>
+                <p class="lead mb-4">A Comparative Analysis and Novel Development of Self-Supervised Foundation Models for Universal EEG Representation and Disease Prediction</p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('models') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-robot"></i> Explore Models
+                    </a>
+                    <a href="{{ url_for('notebooks') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-book"></i> Open Notebooks
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
+                <i class="fas fa-brain fa-10x opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="mb-3">Research Platform Features</h2>
+                <p class="text-muted">Comprehensive tools for EEG analysis and model development</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-robot fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="card-title">Model Testing</h5>
+                        <p class="card-text">Test and validate pre-trained EEG models with real-time accuracy metrics and performance analysis.</p>
+                        <a href="{{ url_for('testing') }}" class="btn btn-primary">Test Models</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-database fa-3x text-success"></i>
+                        </div>
+                        <h5 class="card-title">Data Repository</h5>
+                        <p class="card-text">Centralized storage for EEG datasets with metadata management and easy access for research.</p>
+                        <a href="{{ url_for('datasets') }}" class="btn btn-success">Browse Data</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-book fa-3x text-info"></i>
+                        </div>
+                        <h5 class="card-title">Jupyter Notebooks</h5>
+                        <p class="card-text">Interactive development environment for model creation, data analysis, and experimental workflows.</p>
+                        <a href="{{ url_for('notebooks') }}" class="btn btn-info">Open Notebooks</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-chart-line fa-3x text-warning"></i>
+                        </div>
+                        <h5 class="card-title">Model Analytics</h5>
+                        <p class="card-text">Comprehensive analysis of model performance, accuracy metrics, and comparative studies.</p>
+                        <a href="{{ url_for('models') }}" class="btn btn-warning">View Analytics</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Stats Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <h3 class="text-primary mb-2" id="model-count">0</h3>
+                        <p class="text-muted">Trained Models</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <h3 class="text-success mb-2" id="dataset-count">0</h3>
+                        <p class="text-muted">Datasets Available</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <h3 class="text-info mb-2" id="notebook-count">0</h3>
+                        <p class="text-muted">Active Notebooks</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body">
+                        <h3 class="text-warning mb-2">99.2%</h3>
+                        <p class="text-muted">Best Accuracy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Activity Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <h3 class="mb-4">Recent Models</h3>
+                <div id="recent-models">
+                    <!-- Models will be loaded here -->
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h3 class="mb-4">Quick Actions</h3>
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action" onclick="createNewNotebook()">
+                        <i class="fas fa-plus text-primary"></i> Create New Notebook
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="uploadDataset()">
+                        <i class="fas fa-upload text-success"></i> Upload Dataset
+                    </a>
+                    <a href="{{ url_for('testing') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-vial text-info"></i> Run Model Tests
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="viewAnalytics()">
+                        <i class="fas fa-chart-bar text-warning"></i> View Analytics Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modals -->
+<!-- Create Notebook Modal -->
+<div class="modal fade" id="createNotebookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Notebook</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createNotebookForm">
+                    <div class="mb-3">
+                        <label for="notebookName" class="form-label">Notebook Name</label>
+                        <input type="text" class="form-control" id="notebookName" placeholder="Enter notebook name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="notebookType" class="form-label">Notebook Type</label>
+                        <select class="form-select" id="notebookType">
+                            <option value="analysis">Data Analysis</option>
+                            <option value="training">Model Training</option>
+                            <option value="testing">Model Testing</option>
+                            <option value="preprocessing">Data Preprocessing</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitCreateNotebook()">Create Notebook</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Dataset Modal -->
+<div class="modal fade" id="uploadDatasetModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Dataset</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadDatasetForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="datasetFile" class="form-label">Select File</label>
+                        <input type="file" class="form-control" id="datasetFile" accept=".csv,.edf,.mat,.h5,.hdf5">
+                    </div>
+                    <div class="mb-3">
+                        <label for="datasetDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="datasetDescription" rows="3" placeholder="Describe the dataset..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="submitUploadDataset()">Upload Dataset</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Load recent models
+    function loadRecentModels() {
+        // This would fetch from your API
+        const recentModels = `
+            <div class="card model-card">
+                <div class="card-body">
+                    <h6 class="card-title">EEG-Transformer</h6>
+                    <p class="card-text text-muted">Self-supervised transformer for EEG</p>
+                    <span class="badge bg-success accuracy-badge">95.8% accuracy</span>
+                </div>
+            </div>
+            <div class="card model-card">
+                <div class="card-body">
+                    <h6 class="card-title">ConvNet-EEG</h6>
+                    <p class="card-text text-muted">Convolutional neural network</p>
+                    <span class="badge bg-primary accuracy-badge">92.4% accuracy</span>
+                </div>
+            </div>
+        `;
+        document.getElementById('recent-models').innerHTML = recentModels;
+    }
+
+    // Modal functions
+    function createNewNotebook() {
+        const modal = new bootstrap.Modal(document.getElementById('createNotebookModal'));
+        modal.show();
+    }
+
+    function uploadDataset() {
+        const modal = new bootstrap.Modal(document.getElementById('uploadDatasetModal'));
+        modal.show();
+    }
+
+    function submitCreateNotebook() {
+        const name = document.getElementById('notebookName').value;
+        if (!name) {
+            alert('Please enter a notebook name');
+            return;
+        }
+        
+        fetch('/create_notebook', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: name })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Notebook created successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('createNotebookModal')).hide();
+                window.location.href = '/notebooks';
+            } else {
+                alert('Error creating notebook');
+            }
+        });
+    }
+
+    function submitUploadDataset() {
+        const fileInput = document.getElementById('datasetFile');
+        const description = document.getElementById('datasetDescription').value;
+        
+        if (!fileInput.files[0]) {
+            alert('Please select a file');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        formData.append('description', description);
+        
+        fetch('/upload_dataset', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Dataset uploaded successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('uploadDatasetModal')).hide();
+                window.location.href = '/datasets';
+            } else {
+                alert('Error uploading dataset');
+            }
+        });
+    }
+
+    function viewAnalytics() {
+        window.location.href = '/models';
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        loadRecentModels();
+        
+        // Animate counters
+        const counters = document.querySelectorAll('[id$="-count"]');
+        counters.forEach(counter => {
+            const target = Math.floor(Math.random() * 50) + 10; // Random number for demo
+            let current = 0;
+            const increment = target / 20;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    counter.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    counter.textContent = Math.floor(current);
+                }
+            }, 100);
+        });
+    });
+</script>
+{% endblock %}

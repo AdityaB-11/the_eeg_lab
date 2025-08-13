@@ -1,0 +1,579 @@
+{% extends "base.html" %}
+
+{% block title %}Model Testing - EEG Lab{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 sidebar">
+            <div class="p-3">
+                <h5>Testing Configuration</h5>
+                
+                <div class="mb-3">
+                    <label class="form-label">Select Model</label>
+                    <select class="form-select" id="modelSelect">
+                        <option value="">Choose a model...</option>
+                        {% for model in models %}
+                        <option value="{{ model[0] }}">{{ model[1] }} ({{ model[2] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Test Dataset</label>
+                    <select class="form-select" id="testDataset">
+                        <option value="">Select dataset...</option>
+                        <option value="validation_set">Validation Set</option>
+                        <option value="test_set">Test Set</option>
+                        <option value="custom">Upload Custom</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Evaluation Metrics</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="accuracyMetric" checked>
+                        <label class="form-check-label" for="accuracyMetric">Accuracy</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="precisionMetric" checked>
+                        <label class="form-check-label" for="precisionMetric">Precision</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="recallMetric" checked>
+                        <label class="form-check-label" for="recallMetric">Recall</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="f1Metric" checked>
+                        <label class="form-check-label" for="f1Metric">F1-Score</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="aucMetric">
+                        <label class="form-check-label" for="aucMetric">AUC-ROC</label>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary w-100 mb-3" onclick="runTest()" id="runTestBtn">
+                    <i class="fas fa-play"></i> Run Test
+                </button>
+                
+                <button class="btn btn-outline-success w-100 mb-3" onclick="batchTest()">
+                    <i class="fas fa-layer-group"></i> Batch Test
+                </button>
+                
+                <button class="btn btn-outline-info w-100" onclick="compareModels()">
+                    <i class="fas fa-balance-scale"></i> Compare Models
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Model Testing & Validation</h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" onclick="exportResults()">
+                        <i class="fas fa-download"></i> Export Results
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="clearResults()">
+                        <i class="fas fa-trash"></i> Clear Results
+                    </button>
+                </div>
+            </div>
+
+            <!-- Test Status -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="status-indicator status-offline me-3" id="testStatus"></div>
+                                <div>
+                                    <h6 class="mb-0">Testing Status</h6>
+                                    <small class="text-muted" id="testStatusText">Ready to test</small>
+                                </div>
+                                <div class="ms-auto">
+                                    <div class="progress" style="width: 200px; display: none;" id="testProgress">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Dashboard -->
+            <div class="row" id="resultsContainer" style="display: none;">
+                <!-- Real-time Metrics -->
+                <div class="col-md-8 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Performance Metrics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center mb-3">
+                                <div class="col-md-3">
+                                    <h3 class="text-success" id="accuracyResult">--</h3>
+                                    <small class="text-muted">Accuracy</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <h3 class="text-primary" id="precisionResult">--</h3>
+                                    <small class="text-muted">Precision</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <h3 class="text-info" id="recallResult">--</h3>
+                                    <small class="text-muted">Recall</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <h3 class="text-warning" id="f1Result">--</h3>
+                                    <small class="text-muted">F1-Score</small>
+                                </div>
+                            </div>
+                            <canvas id="metricsChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Info -->
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Model Information</h5>
+                        </div>
+                        <div class="card-body" id="modelInfo">
+                            <p class="text-muted">Select a model to view information</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confusion Matrix -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Confusion Matrix</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="confusionMatrix" width="300" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ROC Curve -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">ROC Curve</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="rocCurve" width="300" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Classification Report -->
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Detailed Classification Report</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="classificationReport">
+                                    <thead>
+                                        <tr>
+                                            <th>Class</th>
+                                            <th>Precision</th>
+                                            <th>Recall</th>
+                                            <th>F1-Score</th>
+                                            <th>Support</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Data will be populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test History -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Test History</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped" id="testHistory">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Model</th>
+                                            <th>Dataset</th>
+                                            <th>Accuracy</th>
+                                            <th>F1-Score</th>
+                                            <th>Duration</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Test history will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Real-time Testing Modal -->
+<div class="modal fade" id="realtimeTestModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Real-time EEG Testing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Live EEG Signal</h6>
+                        <canvas id="liveSignal" width="400" height="200"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Real-time Predictions</h6>
+                        <div class="text-center">
+                            <h3 class="text-primary" id="livePrediction">Normal</h3>
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-success" id="confidenceBar" style="width: 95%">95%</div>
+                            </div>
+                            <small class="text-muted">Confidence Level</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="stopLiveTesting()">Stop Testing</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentTest = null;
+    let testResults = [];
+
+    // Update model info when selection changes
+    document.getElementById('modelSelect').addEventListener('change', function() {
+        const modelId = this.value;
+        if (modelId) {
+            updateModelInfo(modelId);
+        }
+    });
+
+    function updateModelInfo(modelId) {
+        fetch(`/api/model_results/${modelId}`)
+        .then(response => response.json())
+        .then(data => {
+            const modelInfo = document.getElementById('modelInfo');
+            modelInfo.innerHTML = `
+                <table class="table table-sm">
+                    <tr><td><strong>Name:</strong></td><td>${data.name}</td></tr>
+                    <tr><td><strong>Type:</strong></td><td>${data.type}</td></tr>
+                    <tr><td><strong>Previous Accuracy:</strong></td><td>${data.accuracy ? data.accuracy.toFixed(1) + '%' : 'N/A'}</td></tr>
+                    <tr><td><strong>Dataset:</strong></td><td>${data.dataset || 'N/A'}</td></tr>
+                    <tr><td><strong>Created:</strong></td><td>${data.created_at}</td></tr>
+                </table>
+            `;
+        });
+    }
+
+    function runTest() {
+        const modelId = document.getElementById('modelSelect').value;
+        const dataset = document.getElementById('testDataset').value;
+        
+        if (!modelId || !dataset) {
+            alert('Please select both a model and a dataset');
+            return;
+        }
+        
+        // Update UI to show testing state
+        document.getElementById('testStatus').className = 'status-indicator status-online me-3';
+        document.getElementById('testStatusText').textContent = 'Running test...';
+        document.getElementById('testProgress').style.display = 'block';
+        document.getElementById('runTestBtn').disabled = true;
+        
+        // Simulate test progress
+        simulateTest();
+    }
+
+    function simulateTest() {
+        const progressBar = document.querySelector('#testProgress .progress-bar');
+        let progress = 0;
+        
+        const interval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                completeTest();
+            }
+            progressBar.style.width = progress + '%';
+        }, 500);
+    }
+
+    function completeTest() {
+        // Generate mock results
+        const results = {
+            accuracy: 92.5 + Math.random() * 7,
+            precision: 89.2 + Math.random() * 8,
+            recall: 91.8 + Math.random() * 6,
+            f1: 90.5 + Math.random() * 7
+        };
+        
+        // Update UI
+        document.getElementById('accuracyResult').textContent = results.accuracy.toFixed(1) + '%';
+        document.getElementById('precisionResult').textContent = results.precision.toFixed(1) + '%';
+        document.getElementById('recallResult').textContent = results.recall.toFixed(1) + '%';
+        document.getElementById('f1Result').textContent = results.f1.toFixed(1) + '%';
+        
+        document.getElementById('testStatus').className = 'status-indicator status-offline me-3';
+        document.getElementById('testStatusText').textContent = 'Test completed';
+        document.getElementById('testProgress').style.display = 'none';
+        document.getElementById('runTestBtn').disabled = false;
+        document.getElementById('resultsContainer').style.display = 'block';
+        
+        // Create charts
+        createMetricsChart(results);
+        createConfusionMatrix();
+        createROCCurve();
+        updateClassificationReport();
+        addToTestHistory(results);
+    }
+
+    function createMetricsChart(results) {
+        const ctx = document.getElementById('metricsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Accuracy', 'Precision', 'Recall', 'F1-Score'],
+                datasets: [{
+                    label: 'Performance Metrics',
+                    data: [results.accuracy, results.precision, results.recall, results.f1],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+
+    function createConfusionMatrix() {
+        const ctx = document.getElementById('confusionMatrix').getContext('2d');
+        // Mock confusion matrix data
+        const data = [[85, 3, 2], [4, 92, 1], [1, 2, 88]];
+        
+        // Simple implementation - in real app, use specialized confusion matrix library
+        ctx.fillStyle = '#f8f9fa';
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        ctx.fillStyle = '#333';
+        ctx.font = '14px Arial';
+        ctx.fillText('Confusion Matrix', 10, 25);
+        ctx.fillText('(Mock Data)', 10, 45);
+        
+        // Draw grid
+        const cellSize = 80;
+        const startX = 50;
+        const startY = 80;
+        
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const intensity = data[i][j] / 100;
+                ctx.fillStyle = `rgba(54, 162, 235, ${intensity})`;
+                ctx.fillRect(startX + j * cellSize, startY + i * cellSize, cellSize, cellSize);
+                
+                ctx.fillStyle = '#333';
+                ctx.fillText(data[i][j], startX + j * cellSize + 30, startY + i * cellSize + 45);
+            }
+        }
+    }
+
+    function createROCCurve() {
+        const ctx = document.getElementById('rocCurve').getContext('2d');
+        
+        // Generate mock ROC curve data
+        const data = [];
+        for (let i = 0; i <= 100; i++) {
+            const fpr = i / 100;
+            const tpr = Math.min(1, fpr + 0.3 + Math.random() * 0.1);
+            data.push({x: fpr, y: tpr});
+        }
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'ROC Curve (AUC: 0.89)',
+                    data: data,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderWidth: 2,
+                    pointRadius: 0
+                }, {
+                    label: 'Random Classifier',
+                    data: [{x: 0, y: 0}, {x: 1, y: 1}],
+                    borderColor: 'rgba(128, 128, 128, 0.5)',
+                    borderDash: [5, 5],
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: { display: true, text: 'False Positive Rate' },
+                        min: 0,
+                        max: 1
+                    },
+                    y: {
+                        title: { display: true, text: 'True Positive Rate' },
+                        min: 0,
+                        max: 1
+                    }
+                }
+            }
+        });
+    }
+
+    function updateClassificationReport() {
+        const tbody = document.querySelector('#classificationReport tbody');
+        const classes = ['Normal', 'Seizure', 'Artifact'];
+        
+        tbody.innerHTML = '';
+        classes.forEach((className, index) => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${className}</td>
+                <td>${(0.88 + Math.random() * 0.1).toFixed(3)}</td>
+                <td>${(0.85 + Math.random() * 0.12).toFixed(3)}</td>
+                <td>${(0.87 + Math.random() * 0.1).toFixed(3)}</td>
+                <td>${Math.floor(Math.random() * 500) + 100}</td>
+            `;
+        });
+    }
+
+    function addToTestHistory(results) {
+        const tbody = document.querySelector('#testHistory tbody');
+        const row = tbody.insertRow(0);
+        const modelName = document.querySelector('#modelSelect option:checked').textContent;
+        const dataset = document.getElementById('testDataset').value;
+        
+        row.innerHTML = `
+            <td>${new Date().toLocaleString()}</td>
+            <td>${modelName}</td>
+            <td>${dataset}</td>
+            <td>${results.accuracy.toFixed(1)}%</td>
+            <td>${results.f1.toFixed(1)}%</td>
+            <td>${(Math.random() * 30 + 10).toFixed(1)}s</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="viewTestDetails()">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-success" onclick="exportTestResult()">
+                    <i class="fas fa-download"></i>
+                </button>
+            </td>
+        `;
+    }
+
+    function batchTest() {
+        alert('Batch testing feature to be implemented');
+    }
+
+    function compareModels() {
+        alert('Model comparison feature to be implemented');
+    }
+
+    function exportResults() {
+        alert('Export results feature to be implemented');
+    }
+
+    function clearResults() {
+        document.getElementById('resultsContainer').style.display = 'none';
+        document.getElementById('testStatusText').textContent = 'Ready to test';
+    }
+
+    function viewTestDetails() {
+        alert('View test details feature to be implemented');
+    }
+
+    function exportTestResult() {
+        alert('Export test result feature to be implemented');
+    }
+
+    function startLiveTesting() {
+        const modal = new bootstrap.Modal(document.getElementById('realtimeTestModal'));
+        modal.show();
+        
+        // Simulate live EEG signal
+        const ctx = document.getElementById('liveSignal').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 100}, (_, i) => i),
+                datasets: [{
+                    label: 'Live EEG',
+                    data: Array.from({length: 100}, () => Math.random() * 50 - 25),
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                animation: false
+            }
+        });
+        
+        // Update chart periodically
+        setInterval(() => {
+            const newData = Array.from({length: 100}, () => Math.random() * 50 - 25);
+            chart.data.datasets[0].data = newData;
+            chart.update('none');
+            
+            // Update prediction randomly
+            const predictions = ['Normal', 'Seizure', 'Artifact'];
+            const confidence = Math.random() * 40 + 60;
+            document.getElementById('livePrediction').textContent = predictions[Math.floor(Math.random() * 3)];
+            document.getElementById('confidenceBar').style.width = confidence + '%';
+            document.getElementById('confidenceBar').textContent = confidence.toFixed(1) + '%';
+        }, 1000);
+    }
+
+    function stopLiveTesting() {
+        alert('Live testing stopped');
+    }
+</script>
+{% endblock %}
