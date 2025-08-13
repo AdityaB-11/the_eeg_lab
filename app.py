@@ -393,8 +393,29 @@ def citations():
     conn = sqlite3.connect('eeg_lab.db')
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM citations ORDER BY date_added DESC')
-    citations = cursor.fetchall()
+    citations_data = cursor.fetchall()
     conn.close()
+    
+    # Convert tuple data to dictionaries for template access
+    citations = []
+    for citation in citations_data:
+        citations.append({
+            'id': citation[0],
+            'title': citation[1],
+            'authors': citation[2],
+            'year': citation[3],
+            'journal': citation[4],
+            'category': citation[5],
+            'doi': citation[6],
+            'url': citation[7],
+            'abstract': citation[8],
+            'notes': citation[9],
+            'tags': citation[10],
+            'relevance_score': citation[11],
+            'citations_count': citation[12],
+            'bookmarked': citation[13],
+            'date_added': citation[14]
+        })
     
     return render_template('citations.html', citations=citations)
 
@@ -839,4 +860,4 @@ def delete_document_link(link_id):
     return jsonify({'success': True, 'message': 'Document link deleted successfully'})
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)

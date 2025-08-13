@@ -223,7 +223,7 @@
                                 {% endif %}
                                 <div class="col-4">
                                     <strong>Added:</strong><br>
-                                    <span class="text-muted">{{ citation.date_added.strftime('%Y-%m-%d') }}</span>
+                                    <span class="text-muted">{{ citation.date_added[:10] if citation.date_added else 'Unknown' }}</span>
                                 </div>
                             </div>
                             
