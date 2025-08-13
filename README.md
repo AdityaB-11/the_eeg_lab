@@ -28,6 +28,14 @@ A comprehensive Flask web application for EEG research, featuring self-supervise
 - **Confusion Matrix**: Visual representation of classification results
 - **Real-time Monitoring**: Live EEG signal analysis and prediction
 
+### 📚 Citations & Research Papers
+- **Citation Management**: Store and organize research papers
+- **DOI Import**: Automatically fetch citation data from DOI
+- **Bibliography Export**: Generate BibTeX, APA format bibliographies
+- **Research Categories**: Organize papers by EEG analysis, ML, self-supervised learning, etc.
+- **Bookmarking**: Mark important papers for quick access
+- **Search & Filter**: Find papers by title, author, year, or category
+
 ## Project Structure
 
 ```
@@ -41,7 +49,8 @@ the_eeg_lab/
 │   ├── models.html      # Model management
 │   ├── datasets.html    # Data repository
 │   ├── testing.html     # Model testing interface
-│   └── notebooks.html   # Jupyter notebook management
+│   ├── notebooks.html   # Jupyter notebook management
+│   └── citations.html   # Research citations and papers
 ├── data/                # Data storage
 │   ├── uploads/         # Uploaded datasets
 │   └── datasets/        # Processed datasets
@@ -115,6 +124,14 @@ the_eeg_lab/
 - ROC curve analysis
 - Test history tracking
 
+### Citations & Research Papers
+- Import citations from DOI automatically
+- Organize papers by research categories
+- Export bibliographies in multiple formats
+- Search and filter research papers
+- Bookmark important papers
+- Personal notes and relevance scoring
+
 ## Supported EEG Formats
 
 - **EDF/EDF+**: European Data Format
@@ -133,18 +150,33 @@ This platform is designed for:
 3. **Comparative Analysis**: Benchmark different model architectures
 4. **Data Exploration**: Visualize and analyze EEG datasets
 5. **Collaborative Research**: Share notebooks and results with team members
+6. **Literature Management**: Organize and cite relevant research papers
 
 ## API Endpoints
 
+### Core Pages
 - `GET /` - Home page
 - `GET /models` - Model repository
 - `GET /datasets` - Data repository
 - `GET /testing` - Model testing interface
 - `GET /notebooks` - Jupyter notebook management
+- `GET /citations` - Research citations and papers
+
+### Data Operations
 - `POST /upload_dataset` - Upload new dataset
 - `POST /add_model` - Register new model
 - `POST /create_notebook` - Create new notebook
+- `POST /add_citation` - Add new citation
+- `POST /fetch_citation_from_doi` - Import citation from DOI
+
+### API Endpoints
 - `GET /api/model_results/<id>` - Get model details
+- `GET /api/stats` - Get dashboard statistics (models, datasets, notebooks count)
+- `GET /api/recent_models` - Get recent models for dashboard
+- `GET /api/citation_stats` - Get citation statistics
+- `DELETE /delete_citation/<id>` - Delete citation
+- `POST /bookmark_citation/<id>` - Toggle citation bookmark
+- `GET /export_bibliography` - Export bibliography in various formats
 
 ## Contributing
 

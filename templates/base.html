@@ -7,42 +7,204 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Dark Mode Base Styles */
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        
+        /* Navigation Dark Mode */
+        .navbar {
+            background-color: #1f1f1f !important;
+            border-bottom: 1px solid #333;
+        }
+        
         .navbar-brand {
             font-weight: bold;
-            color: #2c3e50 !important;
+            color: #bb86fc !important;
         }
+        
+        .navbar-light .navbar-nav .nav-link {
+            color: #e0e0e0 !important;
+        }
+        
+        .navbar-light .navbar-nav .nav-link:hover {
+            color: #bb86fc !important;
+        }
+        
+        .navbar-toggler {
+            border-color: #333;
+        }
+        
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28224, 224, 224, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        /* Hero Section Dark Mode */
         .hero-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3f51b5 0%, #9c27b0 100%);
             color: white;
             padding: 60px 0;
         }
+        
+        /* Cards Dark Mode */
+        .card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            color: #e0e0e0;
+        }
+        
         .feature-card {
             transition: transform 0.3s ease;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #333;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            background-color: #1e1e1e;
         }
+        
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+            border-color: #bb86fc;
         }
+        
+        /* Sidebar Dark Mode */
         .sidebar {
-            background-color: #f8f9fa;
+            background-color: #1e1e1e;
+            border-right: 1px solid #333;
             min-height: calc(100vh - 56px);
         }
+        
         .main-content {
             padding: 20px;
+            background-color: #121212;
         }
+        
+        /* Model and Dataset Cards */
         .model-card {
-            border-left: 4px solid #007bff;
+            border-left: 4px solid #2196f3;
             margin-bottom: 15px;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
         }
+        
         .dataset-card {
-            border-left: 4px solid #28a745;
+            border-left: 4px solid #4caf50;
             margin-bottom: 15px;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
         }
+        
+        /* Form Controls Dark Mode */
+        .form-control {
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            color: #e0e0e0;
+        }
+        
+        .form-control:focus {
+            background-color: #2a2a2a;
+            border-color: #bb86fc;
+            box-shadow: 0 0 0 0.2rem rgba(187, 134, 252, 0.25);
+            color: #e0e0e0;
+        }
+        
+        .form-select {
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            color: #e0e0e0;
+        }
+        
+        .form-select:focus {
+            background-color: #2a2a2a;
+            border-color: #bb86fc;
+            box-shadow: 0 0 0 0.2rem rgba(187, 134, 252, 0.25);
+        }
+        
+        /* Buttons Dark Mode */
+        .btn-primary {
+            background-color: #bb86fc;
+            border-color: #bb86fc;
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            background-color: #9965f4;
+            border-color: #9965f4;
+            color: #000;
+        }
+        
+        .btn-secondary {
+            background-color: #444;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #555;
+            border-color: #555;
+        }
+        
+        .btn-success {
+            background-color: #4caf50;
+            border-color: #4caf50;
+        }
+        
+        .btn-info {
+            background-color: #2196f3;
+            border-color: #2196f3;
+        }
+        
+        .btn-warning {
+            background-color: #ff9800;
+            border-color: #ff9800;
+            color: #000;
+        }
+        
+        .btn-danger {
+            background-color: #f44336;
+            border-color: #f44336;
+        }
+        
+        /* Tables Dark Mode */
+        .table {
+            color: #e0e0e0;
+        }
+        
+        .table-dark {
+            --bs-table-bg: #1e1e1e;
+            --bs-table-border-color: #333;
+        }
+        
+        /* Badges */
         .accuracy-badge {
             font-size: 0.9em;
         }
+        
+        .badge {
+            color: #000;
+        }
+        
+        .badge.bg-success {
+            background-color: #4caf50 !important;
+        }
+        
+        .badge.bg-warning {
+            background-color: #ff9800 !important;
+        }
+        
+        .badge.bg-danger {
+            background-color: #f44336 !important;
+        }
+        
+        .badge.bg-info {
+            background-color: #2196f3 !important;
+        }
+        
+        .badge.bg-primary {
+            background-color: #bb86fc !important;
+        }
+        
+        /* Status Indicators */
         .status-indicator {
             width: 10px;
             height: 10px;
@@ -50,17 +212,345 @@
             display: inline-block;
             margin-right: 5px;
         }
+        
         .status-online {
-            background-color: #28a745;
+            background-color: #4caf50;
         }
+        
         .status-offline {
-            background-color: #dc3545;
+            background-color: #f44336;
+        }
+        
+        /* Alert Dark Mode */
+        .alert-info {
+            background-color: #1a237e;
+            border-color: #303f9f;
+            color: #e3f2fd;
+        }
+        
+        .alert-success {
+            background-color: #1b5e20;
+            border-color: #388e3c;
+            color: #e8f5e8;
+        }
+        
+        .alert-warning {
+            background-color: #e65100;
+            border-color: #f57c00;
+            color: #fff3e0;
+        }
+        
+        .alert-danger {
+            background-color: #b71c1c;
+            border-color: #d32f2f;
+            color: #ffebee;
+        }
+        
+        /* Modal Dark Mode */
+        .modal-content {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid #333;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid #333;
+        }
+        
+        /* List Group Dark Mode */
+        .list-group-item {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            color: #e0e0e0;
+        }
+        
+        .list-group-item:hover {
+            background-color: #2a2a2a;
+        }
+        
+        /* Progress Bar Dark Mode */
+        .progress {
+            background-color: #333;
+        }
+        
+        /* Dropdown Dark Mode */
+        .dropdown-menu {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+        }
+        
+        .dropdown-item {
+            color: #e0e0e0;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+        }
+        
+        /* Text Colors */
+        .text-muted {
+            color: #999 !important;
+        }
+        
+        /* Custom Dark Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Light Mode Styles */
+        body.light-mode {
+            background-color: #ffffff;
+            color: #212529;
+        }
+        
+        .light-mode .navbar {
+            background-color: #f8f9fa !important;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .light-mode .navbar-brand {
+            color: #2c3e50 !important;
+        }
+        
+        .light-mode .navbar-dark .navbar-nav .nav-link {
+            color: #495057 !important;
+        }
+        
+        .light-mode .navbar-dark .navbar-nav .nav-link:hover {
+            color: #007bff !important;
+        }
+        
+        .light-mode .card {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            color: #212529;
+        }
+        
+        .light-mode .feature-card {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .light-mode .feature-card:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            border-color: #007bff;
+        }
+        
+        .light-mode .sidebar {
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+        
+        .light-mode .main-content {
+            background-color: #ffffff;
+        }
+        
+        .light-mode .model-card,
+        .light-mode .dataset-card {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+        }
+        
+        .light-mode .form-control {
+            background-color: #ffffff;
+            border: 1px solid #ced4da;
+            color: #495057;
+        }
+        
+        .light-mode .form-control:focus {
+            background-color: #ffffff;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            color: #495057;
+        }
+        
+        .light-mode .form-select {
+            background-color: #ffffff;
+            border: 1px solid #ced4da;
+            color: #495057;
+        }
+        
+        .light-mode .form-select:focus {
+            background-color: #ffffff;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .light-mode .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: #ffffff;
+        }
+        
+        .light-mode .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        
+        .light-mode .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #ffffff;
+        }
+        
+        .light-mode .btn-secondary:hover {
+            background-color: #545b62;
+            border-color: #545b62;
+        }
+        
+        .light-mode .table {
+            color: #212529;
+        }
+        
+        .light-mode .modal-content {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+        }
+        
+        .light-mode .modal-header {
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .light-mode .modal-footer {
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .light-mode .list-group-item {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            color: #212529;
+        }
+        
+        .light-mode .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .light-mode .progress {
+            background-color: #e9ecef;
+        }
+        
+        .light-mode .dropdown-menu {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+        }
+        
+        .light-mode .dropdown-item {
+            color: #212529;
+        }
+        
+        .light-mode .dropdown-item:hover {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        
+        .light-mode .text-muted {
+            color: #6c757d !important;
+        }
+        
+        .light-mode .alert-info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        
+        .light-mode .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .light-mode .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+            color: #856404;
+        }
+        
+        .light-mode .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        /* Theme Toggle Button */
+        #themeToggle {
+            background: none !important;
+            border: none !important;
+            color: inherit !important;
+        }
+        
+        #themeToggle:hover {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        .light-mode #themeToggle:hover {
+            background-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Pagination Styles */
+        .pagination .page-link {
+            background-color: #2a2a2a;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+        
+        .pagination .page-link:hover {
+            background-color: #404040;
+            border-color: #666;
+            color: #ffffff;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #ffffff;
+        }
+        
+        .light-mode .pagination .page-link {
+            background-color: #ffffff;
+            border-color: #dee2e6;
+            color: #0d6efd;
+        }
+        
+        .light-mode .pagination .page-link:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            color: #0a58ca;
+        }
+        
+        .light-mode .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #ffffff;
+        }
+        
+        .light-mode .pagination .page-item.disabled .page-link {
+            background-color: #ffffff;
+            border-color: #dee2e6;
+            color: #6c757d;
         }
     </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
                 <i class="fas fa-brain"></i> EEG Lab
@@ -95,6 +585,21 @@
                             <i class="fas fa-book"></i> Notebooks
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('citations') }}">
+                            <i class="fas fa-quote-left"></i> Citations
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <button class="btn nav-link border-0 dropdown-toggle" type="button" id="themeToggleDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-adjust me-2"></i>Auto
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeToggleDropdown">
+                            <li><a class="dropdown-item theme-option" href="#" id="lightTheme"><i class="fas fa-sun me-2"></i>Light</a></li>
+                            <li><a class="dropdown-item theme-option" href="#" id="darkTheme"><i class="fas fa-moon me-2"></i>Dark</a></li>
+                            <li><a class="dropdown-item theme-option active" href="#" id="autoTheme"><i class="fas fa-adjust me-2"></i>Auto</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -122,6 +627,91 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Theme Toggle JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get theme from localStorage or default to 'auto'
+            const savedTheme = localStorage.getItem('theme') || 'auto';
+            const htmlElement = document.documentElement;
+            const bodyElement = document.body;
+            
+            // Theme toggle dropdown items
+            const themeToggleDropdown = document.getElementById('themeToggleDropdown');
+            const lightThemeOption = document.getElementById('lightTheme');
+            const darkThemeOption = document.getElementById('darkTheme');
+            const autoThemeOption = document.getElementById('autoTheme');
+            
+            // Theme icons
+            const themeIcons = {
+                light: '<i class="fas fa-sun me-2"></i>Light',
+                dark: '<i class="fas fa-moon me-2"></i>Dark',
+                auto: '<i class="fas fa-adjust me-2"></i>Auto'
+            };
+            
+            // Function to detect system theme preference
+            function getSystemTheme() {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            
+            // Function to apply theme
+            function applyTheme(theme) {
+                if (theme === 'auto') {
+                    const systemTheme = getSystemTheme();
+                    bodyElement.className = systemTheme === 'dark' ? '' : 'light-mode';
+                    htmlElement.setAttribute('data-bs-theme', systemTheme);
+                } else {
+                    bodyElement.className = theme === 'dark' ? '' : 'light-mode';
+                    htmlElement.setAttribute('data-bs-theme', theme);
+                }
+                
+                // Update toggle button text
+                if (themeToggleDropdown) {
+                    themeToggleDropdown.innerHTML = themeIcons[theme];
+                }
+                
+                // Update active state in dropdown
+                document.querySelectorAll('.theme-option').forEach(option => {
+                    option.classList.remove('active');
+                });
+                
+                if (theme === 'light') lightThemeOption?.classList.add('active');
+                else if (theme === 'dark') darkThemeOption?.classList.add('active');
+                else autoThemeOption?.classList.add('active');
+            }
+            
+            // Initialize theme
+            applyTheme(savedTheme);
+            
+            // Theme change handlers
+            lightThemeOption?.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.setItem('theme', 'light');
+                applyTheme('light');
+            });
+            
+            darkThemeOption?.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.setItem('theme', 'dark');
+                applyTheme('dark');
+            });
+            
+            autoThemeOption?.addEventListener('click', function(e) {
+                e.preventDefault();
+                localStorage.setItem('theme', 'auto');
+                applyTheme('auto');
+            });
+            
+            // Listen for system theme changes when auto mode is selected
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+                const currentTheme = localStorage.getItem('theme') || 'auto';
+                if (currentTheme === 'auto') {
+                    applyTheme('auto');
+                }
+            });
+        });
+    </script>
+    
     {% block scripts %}{% endblock %}
 </body>
 </html>

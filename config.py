@@ -11,8 +11,11 @@ class Config:
     
     # Upload settings
     UPLOAD_FOLDER = 'data/uploads'
-    MAX_CONTENT_LENGTH = 500 * 1024 * 1024  # 500MB max file size
-    ALLOWED_EXTENSIONS = {'.csv', '.edf', '.mat', '.h5', '.hdf5', '.fif', '.set'}
+    MAX_CONTENT_LENGTH = 200 * 1024 * 1024 * 1024  # 200GB max file size for large EEG datasets
+    ALLOWED_EXTENSIONS = {'.csv', '.edf', '.bdf', '.gdf', '.mat', '.h5', '.hdf5', '.fif', '.set', '.fdt', '.npz'}
+    
+    # Chunk size for large file uploads (100MB chunks)
+    CHUNK_SIZE = 100 * 1024 * 1024
     
     # Jupyter settings
     JUPYTER_PORT = 8888
@@ -29,12 +32,16 @@ class Config:
     # Supported EEG formats
     SUPPORTED_FORMATS = {
         '.edf': 'European Data Format',
+        '.bdf': 'BioSemi Data Format',
+        '.gdf': 'General Data Format',
         '.csv': 'Comma Separated Values',
         '.mat': 'MATLAB File',
         '.h5': 'HDF5 Format',
         '.hdf5': 'HDF5 Format',
         '.fif': 'Functional Imaging Format (MNE)',
-        '.set': 'EEGLAB Dataset'
+        '.set': 'EEGLAB Dataset',
+        '.fdt': 'EEGLAB Data File',
+        '.npz': 'NumPy Compressed Array'
     }
     
     # Default model types

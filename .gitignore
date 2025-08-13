@@ -107,6 +107,23 @@ cython_debug/
 /checkpoints/
 /logs/
 
+# Large dataset files (1GB - 150GB)
+*.edf
+*.bdf
+*.gdf
+*.set
+*.fdt
+*.mat
+*.h5
+*.hdf5
+*.npz
+
+# Temporary data processing files
+*.tmp
+*.temp
+/temp/
+/tmp/
+
 # Environment
 .env
 .env.*
