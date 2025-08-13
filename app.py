@@ -71,6 +71,36 @@ def init_db():
         )
     ''')
     
+    # Create research notes table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS research_notes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            category TEXT,
+            priority TEXT DEFAULT 'medium',
+            tags TEXT,
+            related_citations TEXT,
+            pinned BOOLEAN DEFAULT FALSE,
+            date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            date_modified TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Create document links table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS document_links (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            url TEXT NOT NULL,
+            description TEXT,
+            type TEXT DEFAULT 'documentation',
+            importance TEXT DEFAULT 'reference',
+            tags TEXT,
+            date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -677,6 +707,136 @@ def generate_citation_report():
     )
     response.headers['Content-Disposition'] = 'attachment; filename=citation_report.html'
     return response
+
+# Research Notes routes
+@app.route('/add_research_note', methods=['POST'])
+def add_research_note():
+    data = request.get_json()
+    
+    conn = sqlite3.connect('eeg_lab.db')
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        INSERT INTO research_notes (title, content, category, priority, tags, related_citations)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (
+        data['title'], data['content'], data.get('category'),
+        data.get('priority', 'medium'), data.get('tags'), data.get('related_citations')
+    ))
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': 'Research note added successfully'})
+
+@app.route('/api/research_notes')
+def get_research_notes():
+    conn = sqlite3.connect('eeg_lab.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT id, title, content, category, priority, tags, related_citations, 
+               pinned, date_created, date_modified
+        FROM research_notes 
+        ORDER BY pinned DESC, date_modified DESC
+    ''')
+    notes_data = cursor.fetchall()
+    conn.close()
+    
+    notes = []
+    for note in notes_data:
+        notes.append({
+            'id': note[0],
+            'title': note[1],
+            'content': note[2],
+            'category': note[3],
+            'priority': note[4],
+            'tags': note[5],
+            'related_citations': note[6],
+            'pinned': note[7],
+            'date_created': note[8][:10] if note[8] else '',  # Format date
+            'date_modified': note[9][:10] if note[9] else ''
+        })
+    
+    return jsonify({'notes': notes})
+
+@app.route('/delete_research_note/<int:note_id>', methods=['DELETE'])
+def delete_research_note(note_id):
+    conn = sqlite3.connect('eeg_lab.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM research_notes WHERE id = ?', (note_id,))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': 'Research note deleted successfully'})
+
+@app.route('/pin_research_note/<int:note_id>', methods=['POST'])
+def pin_research_note(note_id):
+    conn = sqlite3.connect('eeg_lab.db')
+    cursor = conn.cursor()
+    cursor.execute('UPDATE research_notes SET pinned = NOT pinned WHERE id = ?', (note_id,))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': 'Note pin status updated'})
+
+# Document Links routes
+@app.route('/add_document_link', methods=['POST'])
+def add_document_link():
+    data = request.get_json()
+    
+    conn = sqlite3.connect('eeg_lab.db')
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        INSERT INTO document_links (title, url, description, type, importance, tags)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (
+        data['title'], data['url'], data.get('description'),
+        data.get('type', 'documentation'), data.get('importance', 'reference'),
+        data.get('tags')
+    ))
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': 'Document link added successfully'})
+
+@app.route('/api/document_links')
+def get_document_links():
+    conn = sqlite3.connect('eeg_lab.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT id, title, url, description, type, importance, tags, date_added
+        FROM document_links 
+        ORDER BY date_added DESC
+    ''')
+    links_data = cursor.fetchall()
+    conn.close()
+    
+    links = []
+    for link in links_data:
+        links.append({
+            'id': link[0],
+            'title': link[1],
+            'url': link[2],
+            'description': link[3],
+            'type': link[4],
+            'importance': link[5],
+            'tags': link[6],
+            'date_added': link[7][:10] if link[7] else ''  # Format date
+        })
+    
+    return jsonify({'links': links})
+
+@app.route('/delete_document_link/<int:link_id>', methods=['DELETE'])
+def delete_document_link(link_id):
+    conn = sqlite3.connect('eeg_lab.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM document_links WHERE id = ?', (link_id,))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': 'Document link deleted successfully'})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
